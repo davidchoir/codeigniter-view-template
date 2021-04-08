@@ -6,10 +6,30 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * 
  * @author David Choir
  * @link https://github.com/davidchoir/codeigniter-view-template
+ * @version 1.1.0
  * 
  */
 class Template {
+	
+	/**
+	 * Layout template path and app layout template
+	 * Default layout directory path is application/views/layouts
+	 * Default app file path is application/views/layouts/app.php
+	 * 
+	 * @var String
+	 */
+	private $_layout	= 'layouts';
+	private $_app		= 'app';
 
+	/**
+	 * Title segment template
+	 * Default segment for title is 1 and subtitle is 2
+	 * 
+	 * @var String
+	 */
+	private $_segment_title 	= 1;
+	private $_segment_subtitle	= 2;
+		
 	/**
 	 * Data for class manipulation
 	 * 
@@ -19,10 +39,9 @@ class Template {
 
 	/**
 	 * Enables the use of CI super-global without having to define an extra variable.
-	 *
-	 * @param $var
-	 * @return mixed
 	 */
+	private $CI;
+	
 	public function __construct()
     {
         $this->CI =& get_instance();
@@ -33,7 +52,6 @@ class Template {
 	 *
 	 * @param String $key
 	 * @param String $value
-	 * @return Array
 	 */
 	private function _set_section($key, $value)
 	{
@@ -47,17 +65,25 @@ class Template {
 	 */
 	private function _get_title()
 	{
-		$segment_two = ucfirst($this->CI->uri->segment(2));
-		$segment_two = ! empty($segment_two) ? ' - ' . $segment_two : NULL;
+		$title = ! empty($this->CI->uri->segment($this->_segment_title)) ? $this->CI->uri->segment($this->_segment_title) : NULL;
+		return ucfirst(str_replace('-', ' ', str_replace('_', ' ', $title)));
+	}
 
-		return ucfirst($this->CI->uri->segment(1)) . $segment_two;
+	/**
+	 * Set the page subtitle from URI segment
+	 *
+	 * @return String
+	 */
+	private function _get_subtitle()
+	{
+		$subtitle = ! empty($this->CI->uri->segment($this->_segment_subtitle)) ? $this->CI->uri->segment($this->_segment_subtitle) : NULL;
+		return ucfirst(str_replace('-', ' ', str_replace('_', ' ', $subtitle)));
 	}
 
 	/**
 	 * Get the layout part like css, script, navbar, header, footer etc
 	 * 
 	 * @param	String	$template	directory path template
-	 * @return	Array
 	 */
 	private function _section($template)
 	{
@@ -65,39 +91,79 @@ class Template {
 
 		// get all files from view path
 		$file_name = get_filenames(VIEWPATH . $template . '/');
-
-		$partial_file = array();
-		foreach ($file_name as $key => $value) {
-
-			// set of data array sections
-			// remove extension .php from section name
-			$section_name = str_replace('.php', '', $value);
-			if ($value[0] == '_') $partial_file[] = $this->_set_section($section_name, $this->CI->load->view($template . '/' . $value, NULL, TRUE));
+		if( ! empty($file_name))
+		{
+			foreach ($file_name as $key => $value)
+			{
+				// set of data array sections
+				// remove extension .php from section name
+				$section_name = str_replace('.php', '', $value);
+				if ($value[0] == '_') $this->_set_section($section_name, $this->CI->load->view($template . '/' . $value, NULL, TRUE));
+			}
 		}
+	}
+
+	/**
+	 * Set segment URI for auto generate page title
+	 * 
+	 * @param	Integer	$segment_title		segment URI number
+	 * @param	Integer	$segment_subtitle	segment URI number
+	 */
+	public function title_segment($segment_title = NULL, $segment_subtitle = NULL)
+	{
+		if( ! is_null($segment_title)) $this->_segment_title 		= $segment_title;
+		if( ! is_null($segment_subtitle)) $this->_segment_subtitle	= $segment_subtitle;
+	}
+
+	/**
+	 * Push layout part
+	 * 
+	 * @param	String	$path 	layout part
+	 */
+	public function push($path)
+	{
+		return $this->CI->load->view($path, NULL, TRUE);
+	}
+
+	/**
+	 * Set template layout path
+	 * 
+	 * @param	String	$path 	layout path
+	 */
+	public function layout($path = NULL)
+	{
+		if( ! is_null($path)) $this->_layout = $path;
+	}
+
+	/**
+	 * Set main template path
+	 * 
+	 * @param	String	$path	main template path
+	 */
+	public function app($path = NULL)
+	{
+		if( ! is_null($path)) $this->_app = $path;
 	}
 
 	/**
 	 * Render page view template
 	 * 
-	 * @param	String	$template	directory path template
 	 * @param	String	$view		directory path view
 	 * @param	Array	$vars		parse array data to view
 	 * @param	Boolean	$return
 	 * @return	mixed
 	 */
-	public function view($template, $view, $vars = array(), $return = FALSE)
+	public function view($view, $vars = array(), $return = FALSE)
 	{
-		$this->CI->load->library('parser');
-
 		// set of data array sections for parsing into html
 		if ( ! isset($vars['title'])) $this->_set_section('title', $this->_get_title());
-		$this->_section($template);
+		if ( ! isset($vars['subtitle'])) $this->_set_section('subtitle', $this->_get_subtitle());
+		$this->_section($this->_layout);
 		$this->_set_section('content', $this->CI->load->view($view, $vars, TRUE));
 
 		// merge array from section and controller
 		$data = array_merge($vars, $this->_var_section);
 
-		// render page using template parsing
-		$this->CI->parser->parse($template . '/app', $data, $return);
+		$this->CI->load->view($this->_layout . '/' . $this->_app, $data, $return);
 	}
 }

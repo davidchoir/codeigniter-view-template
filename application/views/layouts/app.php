@@ -4,15 +4,15 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 <html lang="en">
 <head>
 	<meta charset="utf-8">
-	<title>{title}</title>
-    {_css}
+	<title><?= $title . ' | ' . $subtitle ?></title>
+    <?= $_css ?>
 </head>
 <body>
 
 <div id="container">
-    {content}
-    {_script}
-    {_footer}
+    <?= $content ?>
+    <?= $_script ?>
+    <?= $_footer ?>
 </div>
 
 </body>
