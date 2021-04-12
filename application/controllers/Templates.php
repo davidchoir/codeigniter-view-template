@@ -14,16 +14,16 @@ class Templates extends CI_Controller {
 	 * 
 	 * 		http://example.com/index.php/<title>/<subtitle>
 	 * 
-	 * But you can set generate title and subtitle based on segment 2 and 3
+	 * But you can custom generate title and subtitle based on segment 2 and 3
 	 * using code below:
 	 * 		
 	 * 		$this->template->title_segment(2, 3);
 	 * 
-	 *	- or you can set generate title only based on segment 2
+	 *	- or you can custom generate title only based on segment 2
 	 *
 	 * 		$this->template->title_segment(2);
 	 * 
-	 * 	- or you can set generate subtitle only based on segment 3
+	 * 	- or you can custom generate subtitle only based on segment 3
 	 *
 	 * 		$this->template->title_segment(NULL, 3);
 	 * 
@@ -49,6 +49,21 @@ class Templates extends CI_Controller {
 	 * 
 	 * 		$this->template->app('your_app');
 	 * 
+	 * ------------------------------------------------------------------------
+	 * 
+	 * Stack
+	 * 
+	 * If you have a css or script for specific page, you can push part of 
+	 * layout by code below in your controller:
+	 * 
+	 *		$this->template->push('_your_css', 'css');
+	 * 
+	 * first parameter is your layout part directory, then second parameter 
+	 * is your stack name. You can call a function inside your main layout 
+	 * 'application/views/layouts/app.php' like this:
+	 * 
+	 * 		<?= $this->template->stack('css') ?>
+	 * 
 	 * @link https://github.com/davidchoir/codeigniter-view-template
 	 */
 	public function __construct()
@@ -70,5 +85,13 @@ class Templates extends CI_Controller {
 		$data['subtitle']	= 'example';
 
 		$this->template->view('welcome', $data);
+	}
+
+	public function stack()
+	{
+		$this->template->push('stack/_css', 'css');
+		$this->template->push('stack/_script', 'script');
+
+		$this->template->view('stack/index');
 	}
 }

@@ -6,13 +6,15 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 	<meta charset="utf-8">
 	<title><?= $title . ' | ' . $subtitle ?></title>
     <?= $_css ?>
+    <?= $this->template->stack('css') ?>
 </head>
 <body>
 
 <div id="container">
     <?= $content ?>
-    <?= $_script ?>
     <?= $_footer ?>
+    <?= $_script ?>
+    <?= $this->template->stack('script') ?>
 </div>
 
 </body>

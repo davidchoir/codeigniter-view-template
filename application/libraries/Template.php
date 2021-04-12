@@ -4,9 +4,9 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 /**
  * Codeigniter view template library
  * 
- * @author David Choir
- * @link https://github.com/davidchoir/codeigniter-view-template
- * @version 1.1.0
+ * @author	David Choir
+ * @link	https://github.com/davidchoir/codeigniter-view-template
+ * @version	1.2.0
  * 
  */
 class Template {
@@ -35,7 +35,8 @@ class Template {
 	 * 
 	 * @var Array
 	 */
-	private $_var_section = array();
+	private $_var_section	= array();
+	private $_push_layout	= array();
 
 	/**
 	 * Enables the use of CI super-global without having to define an extra variable.
@@ -116,13 +117,31 @@ class Template {
 	}
 
 	/**
-	 * Push layout part
+	 * Push data layout part for specified page
 	 * 
-	 * @param	String	$path 	layout part
+	 * @param	String	$path 	path of layout part
+	 * @param	String	$alias 	name of parameter stack function on app function
 	 */
-	public function push($path)
+	public function push($path, $alias = NULL)
 	{
-		return $this->CI->load->view($path, NULL, TRUE);
+		if(is_null($alias)) $alias	= $path;
+
+		$this->_push_layout[$alias]	= $path;
+	}
+
+	/**
+	 * Load part file of layout
+	 * 
+	 * @param	String	$var	variable from push
+	 */
+	public function stack($var)
+	{
+		$data = isset($this->_push_layout[$var]) ? $this->_push_layout[$var] : NULL;
+		
+		if( ! is_null($data))
+		{
+			return $this->CI->load->view($data, NULL, TRUE);
+		}
 	}
 
 	/**
